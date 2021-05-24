@@ -3,6 +3,8 @@ var { Readability } = require('@mozilla/readability');
 var { JSDOM } = require('jsdom');
 const request = require('request');
 const helmet = require("helmet");
+const fs = require('fs');
+const path = require('path');
 const app = express()
 function helmetPotato() {
     app.use(helmet.hidePoweredBy());
@@ -11,10 +13,12 @@ function helmetPotato() {
     app.use(helmet.xssFilter());
 }
 helmetPotato()
-const port = 3000
+const port = 8080 //use this as the external port if you plan on publishing this.
+const internalPort = 3000 //use this if you are inside your LAN
 const subdomain = "www.sparksammy.com"
 const siteName = `http://${subdomain}:${port}`
 const proxying = `${siteName}/net?url=`
+const proxyResource = `${siteName}/res?url=`
 var headHTML = `<head>
 <title>Wikipedia</title>
 <style>
@@ -94,8 +98,8 @@ app.get('/net', (req, res) => {
             var arrOfTags = []
             newbody = newbody.replace(/href="/g, `href="${proxying}${urlNoDoc}/`)
             newbody = newbody.replace(/href='/g, `href='${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/src="/g, `src="${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/src='/g, `src='${proxying}${urlNoDoc}/`)
+            newbody = newbody.replace(/src="/g, `src="${proxyResource}${urlNoDoc}/`)
+            newbody = newbody.replace(/src='/g, `src='${proxyResource}${urlNoDoc}/`)
             newbody = newbody.replace(`href="${urlNoDoc}/http://`, `href="http://`)
             newbody = newbody.replace(`href='${urlNoDoc}/http://`, `href='http://`)
             newbody = newbody.replace(`${urlNoDoc}/http://`, `http://`)
@@ -139,10 +143,10 @@ app.get('/net', (req, res) => {
             var olddom = new JSDOM(`${body}`, { url: req.query.url});
             var newbody = body
             var arrOfTags = []
-            newbody = newbody.replace(/href="/g, `href="${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/href='/g, `href='${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/src="/g, `src="${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/src='/g, `src='${proxying}${urlNoDoc}/`)
+            newbody = newbody.replace(/href="/g, `href="${proxyResource}${urlNoDoc}/`)
+            newbody = newbody.replace(/href='/g, `href='${proxyResource}${urlNoDoc}/`)
+            newbody = newbody.replace(/src="/g, `src="${proxyResource}${urlNoDoc}/`)
+            newbody = newbody.replace(/src='/g, `src='${proxyResource}${urlNoDoc}/`)
             newbody = newbody.split(`href="https://www.${baseurl}`).join(`href="${proxying}https://${baseurl}`)
             newbody = newbody.split(`href="http://www.${baseurl}`).join(`href="${proxying}http://${baseurl}`)
             newbody = newbody.split(`href="https://${baseurl}`).join(`href="${proxying}https://${baseurl}`)
@@ -151,7 +155,7 @@ app.get('/net', (req, res) => {
             resf.send(`<html>
             ${headHTML}
             <body>
-            <b>NoBlokz</b>
+            <b>Totally Wikipedia</b>
             <form action="/net" align="center" width="100%" method="get">
                 <input type="text" width="100%" id="url" name="url" value="http://"><input type="submit" value="pls work...">
             </form>
@@ -167,6 +171,36 @@ app.get('/net', (req, res) => {
     
 })
 
-app.listen(port, () => {
-    console.log(`NoBlokz listening at http://localhost:${port}`)
+app.get('/res', (req, res) => {
+    const reqf = req;
+    const resf = res;
+    var baseurl = ""
+    var filename = String(Math.floor(Math.random() * 32))
+    request(req.query.url, { json: false }, (err, res, body) => {
+        if (err) { return console.log(err); }
+        try { 
+            fs.writeFile(`/siteresources/${filename}`, body, function (err) {
+                if (err) return console.log(err);
+                    resf.sendFile(path.join(__dirname, "/siteresources/", "filename"))
+                    fs.unlink(`/siteresources/${filename}`, (err) => {
+                        if (err) return console.log(err);
+                    });
+                });
+            
+        } catch (error) {
+            console.log(error)
+            resf.send(`<html>
+            ${headHTML}
+            <body>
+            404...
+            </body>
+            </html>`)
+        }
+
+    });
+    
+})
+
+app.listen(internalPort, () => {
+    console.log(`NoBlokz listening at http://localhost:${internalPort}, external port is ${port}.`)
 })
