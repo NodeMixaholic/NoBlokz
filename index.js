@@ -94,16 +94,16 @@ app.get('/net', (req, res) => {
             var arrOfTags = []
             newbody = newbody.replace(/href="/g, `href="${proxying}${urlNoDoc}/`)
             newbody = newbody.replace(/href='/g, `href='${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/src="/g, `src="${urlNoDoc}/`)
-            newbody = newbody.replace(/src='/g, `src='${urlNoDoc}/`)
+            newbody = newbody.replace(/src="/g, `src="${proxying}${urlNoDoc}/`)
+            newbody = newbody.replace(/src='/g, `src='${proxying}${urlNoDoc}/`)
             newbody = newbody.replace(`href="${urlNoDoc}/http://`, `href="http://`)
             newbody = newbody.replace(`href='${urlNoDoc}/http://`, `href='http://`)
             newbody = newbody.replace(`${urlNoDoc}/http://`, `http://`)
             newbody = newbody.replace(`${urlNoDoc}/https://`, `https://`)            
-            newBody = newbody.split(`href="https://www.${baseurl}`).join(`href="${proxying}https://${baseurl}`)
-            newBody = newBody.split(`href="http://www.${baseurl}`).join(`href="${proxying}http://${baseurl}`)
-            newBody = newBody.split(`href="https://${baseurl}`).join(`href="${proxying}https://${baseurl}`)
-            newBody = newBody.split(`href="http://${baseurl}`).join(`href="${proxying}http://${baseurl}`)
+            newbody = newbody.split(`href="https://www.${baseurl}`).join(`href="${proxying}https://${baseurl}`)
+            newbody = newbody.split(`href="http://www.${baseurl}`).join(`href="${proxying}http://${baseurl}`)
+            newbody = newbody.split(`href="https://${baseurl}`).join(`href="${proxying}https://${baseurl}`)
+            newbody = newbody.split(`href="http://${baseurl}`).join(`href="${proxying}http://${baseurl}`)
             var newdom = new JSDOM(`${newbody}`, { url: req.query.url});
             resf.send(`<html>
             ${headHTML}
@@ -114,7 +114,7 @@ app.get('/net', (req, res) => {
             </form>
             <hr>
             
-            ${newBody}
+            ${newbody}
         
             </body>
             </html>`)
@@ -141,14 +141,13 @@ app.get('/net', (req, res) => {
             var arrOfTags = []
             newbody = newbody.replace(/href="/g, `href="${proxying}${urlNoDoc}/`)
             newbody = newbody.replace(/href='/g, `href='${proxying}${urlNoDoc}/`)
-            newbody = newbody.replace(/src="/g, `src="${urlNoDoc}/`)
-            newbody = newbody.replace(/src='/g, `src='${urlNoDoc}/`)
+            newbody = newbody.replace(/src="/g, `src="${proxying}${urlNoDoc}/`)
+            newbody = newbody.replace(/src='/g, `src='${proxying}${urlNoDoc}/`)
             newbody = newbody.split(`href="https://www.${baseurl}`).join(`href="${proxying}https://${baseurl}`)
             newbody = newbody.split(`href="http://www.${baseurl}`).join(`href="${proxying}http://${baseurl}`)
             newbody = newbody.split(`href="https://${baseurl}`).join(`href="${proxying}https://${baseurl}`)
             newbody = newbody.split(`href="http://${baseurl}`).join(`href="${proxying}http://${baseurl}`)
-            newbody = newbody.replace(`${urlNoDoc}/http://`, `http://`)
-            newbody = newbody.replace(`${urlNoDoc}/https://`, `https://`)
+
             resf.send(`<html>
             ${headHTML}
             <body>
