@@ -5,6 +5,7 @@ const request = require('request');
 const helmet = require("helmet");
 const fs = require('fs');
 const path = require('path');
+const { waitForDebugger } = require('inspector');
 const app = express()
 function helmetPotato() {
     app.use(helmet.hidePoweredBy());
@@ -178,18 +179,22 @@ app.get('/res', (req, res) => {
 
     var filename = `${String(Math.floor(Math.random() * 420))}${extname}`
     var filepath = path.join(__dirname, "siteresources", filename)
+    var sendpath = String(filepath)
+    function exterm() {
+        fs.unlink(`${filepath}`, function() {
+            console.log("Deleted!")
+        })
+    }
     request(req.query.url, { json: false }, (err, res, body) => {
         if (err) { return console.log(err); }
         try { 
             fs.writeFile(`${filepath}`, body, function (err) {
                 if (err) return console.log(err);
-            });
-            console.log("Sending file...")
-            resf.status(200).sendFile(filepath)
-            console.log("File sent! Deleting...")
-            fs.unlink(`${filepath}`, (err) => {
-                if (err) return console.log(err);
-                console.log("File deleted! :-)")
+                console.log("Sending file...")
+                resf.status(200).sendFile(sendpath, (err) => {
+                    setTimeout(exterm,15000)
+                    console.log("File send timeout reached! Deleting...")
+                })
             });
             
         } catch (error) {
