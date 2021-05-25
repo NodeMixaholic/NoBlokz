@@ -9,7 +9,6 @@ const app = express()
 function helmetPotato() {
     app.use(helmet.hidePoweredBy());
     app.use(helmet.ieNoOpen());
-    app.use(helmet.noSniff());
     app.use(helmet.xssFilter());
 }
 helmetPotato()
@@ -61,7 +60,7 @@ app.get('/', (req, res) => {
     </form> 
     <hr>
     <p>Copyright Samuel Lord. Licensed under the MIT license.
-    <br>Source available on the <a href="https://github.com/sparksammy/NoBlokz" target="_blank">NoBlokz GitHub.</a></p>
+    <br>Source available on the <a href="https://github.com/sparksammy/NoBlokz" target="_blank">GitHub Repo.</a></p>
     </body>
     </html>`)
 })
@@ -174,22 +173,28 @@ app.get('/net', (req, res) => {
 app.get('/res', (req, res) => {
     const reqf = req;
     const resf = res;
-    var baseurl = ""
-    var filename = String(Math.floor(Math.random() * 32))
+    var basename = path.basename(req.query.url)
+    var extname = path.extname(basename)
+
+    var filename = `${String(Math.floor(Math.random() * 420))}${extname}`
+    var filepath = path.join(__dirname, "siteresources", filename)
     request(req.query.url, { json: false }, (err, res, body) => {
         if (err) { return console.log(err); }
         try { 
-            fs.writeFile(`/siteresources/${filename}`, body, function (err) {
+            fs.writeFile(`${filepath}`, body, function (err) {
                 if (err) return console.log(err);
-                    resf.sendFile(path.join(__dirname, "/siteresources/", "filename"))
-                    fs.unlink(`/siteresources/${filename}`, (err) => {
-                        if (err) return console.log(err);
-                    });
-                });
+            });
+            console.log("Sending file...")
+            resf.status(200).sendFile(filepath)
+            console.log("File sent! Deleting...")
+            fs.unlink(`${filepath}`, (err) => {
+                if (err) return console.log(err);
+                console.log("File deleted! :-)")
+            });
             
         } catch (error) {
             console.log(error)
-            resf.send(`<html>
+            resf.status(404).send(`<html>
             ${headHTML}
             <body>
             404...
